@@ -27,8 +27,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/ext_margin"
             android:layout_weight="1"
-            android:text="content://sms"
-            android:hint="content://" />
+            android:hint="content://"
+            android:text="content:/" />
 
         <Button
             android:id="@+id/goButton"
@@ -62,18 +62,42 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-<!--        TODO voir si une nestedScrollView conviendrait mieux -->
-        <HorizontalScrollView
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/tableLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:orientation="vertical">
 
-            <TableLayout
-                android:id="@+id/table"
+
+            <!--        TODO voir si une nestedScrollView conviendrait mieux -->
+            <Button
+                android:id="@+id/previousButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="gone" />
+                android:layout_gravity="center"
+                android:text="PREVIOUS" />
 
-        </HorizontalScrollView>
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TableLayout
+                    android:id="@+id/table"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </HorizontalScrollView>
+
+            <Button
+                android:id="@+id/nextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="NEXT" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
 
     </ScrollView>
 

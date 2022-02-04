@@ -21,6 +21,14 @@ class MainViewModel : ViewModel() {
 
     private val tableContent: MutableLiveData<List<List<String>>?> = MutableLiveData(null)
 
+    private var mOffset = 0
+
+    private lateinit var mUri: String
+
+    val LIMIT = 20
+
+    var mRowCount: Int? = null
+
 
     fun getTableContent(): LiveData<List<List<String>>?> {
         return tableContent
@@ -28,25 +36,32 @@ class MainViewModel : ViewModel() {
 
 
     fun launchQuery(context: Context, uri: String) {
+        this.mOffset = 0
+        this.mUri = uri
+
         viewModelScope.launch {
-            tableContent.postValue(fetchContentResolver(context, uri))
+            tableContent.postValue(fetchContentResolver(context, uri, mOffset))
         }
     }
 
 
-    @SuppressLint("Range")
-    private suspend fun fetchContentResolver(context: Context, uri: String): List<List<String>>? {
+//    @SuppressLint("Range")
+    private suspend fun fetchContentResolver(context: Context, uri: String, offset: Int): List<List<String>>? {
         return withContext(Dispatchers.IO) {
 
             val rootList = mutableListOf<List<String>>()
 
 
             val cursor = context.contentResolver.query(
-                Uri.parse(uri), null, null, null, null
+                Uri.parse(uri), null, null, null, "_id LIMIT $LIMIT OFFSET ${offset*LIMIT}"
             )
 
 
             if ((cursor != null) && (cursor.count > 0)) {
+
+                if (mOffset == 0){
+                    mRowCount = cursor.count
+                }
 
                 //HEADER
                 val header = mutableListOf<String>()
@@ -58,13 +73,13 @@ class MainViewModel : ViewModel() {
                 while (cursor.moveToNext()) {
                     val line = mutableListOf<String>()
 
-                    for (col in cursor.columnNames) {
+                    for (i in 0 until cursor.columnCount) {
 
-                        val value = when(val index = cursor.getType(cursor.getColumnIndex(col))){
-                            Cursor.FIELD_TYPE_BLOB -> cursor.getBlobOrNull(index).toString()
-                            Cursor.FIELD_TYPE_FLOAT -> cursor.getFloatOrNull(index).toString()
-                            Cursor.FIELD_TYPE_INTEGER -> cursor.getIntOrNull(index).toString()
-                            Cursor.FIELD_TYPE_STRING -> cursor.getStringOrNull(index).toString()
+                        val value = when(cursor.getType(i)){
+                            Cursor.FIELD_TYPE_BLOB -> cursor.getBlobOrNull(i).toString()
+                            Cursor.FIELD_TYPE_FLOAT -> cursor.getFloatOrNull(i).toString()
+                            Cursor.FIELD_TYPE_INTEGER -> cursor.getIntOrNull(i).toString()
+                            Cursor.FIELD_TYPE_STRING -> cursor.getStringOrNull(i).toString()
                             else -> {
                                 "null"
                             }
@@ -85,6 +100,29 @@ class MainViewModel : ViewModel() {
 
                 null
             }
+        }
+    }
+
+    fun previous(context: Context) {
+        if (this.mOffset <= 0){
+            return
+        }
+        this.mOffset--
+
+        viewModelScope.launch {
+            tableContent.postValue(fetchContentResolver(context, mUri, mOffset))
+        }
+    }
+
+    fun next(context: Context) {
+        if (this.mOffset*this.LIMIT > this.mRowCount!!){
+            return
+        }
+
+        this.mOffset++
+
+        viewModelScope.launch {
+            tableContent.postValue(fetchContentResolver(context, mUri, mOffset))
         }
     }
 }

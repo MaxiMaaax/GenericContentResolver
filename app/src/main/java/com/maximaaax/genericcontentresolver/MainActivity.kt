@@ -89,6 +89,14 @@ class MainActivity : AppCompatActivity() {
         binding.goButton.setOnClickListener {
             viewModel.launchQuery(this, binding.urlInput.text.toString())
         }
+
+        binding.previousButton.setOnClickListener {
+            viewModel.previous(this)
+        }
+
+        binding.nextButton.setOnClickListener {
+            viewModel.next(this)
+        }
     }
 
 
@@ -97,7 +105,7 @@ class MainActivity : AppCompatActivity() {
         tableContent?.let {
 
             binding.emptyCursorTextView.gone()
-            binding.table.visible()
+            binding.tableLayout.visible()
 
 
             val tableParams = TableLayout.LayoutParams(
@@ -143,7 +151,7 @@ class MainActivity : AppCompatActivity() {
 
         } ?: kotlin.run {
             binding.emptyCursorTextView.visible()
-            binding.table.gone()
+            binding.tableLayout.gone()
         }
     }
 
